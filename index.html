@@ -416,6 +416,23 @@ h1, h2, h3, .roman-font {
     margin-top: 30px;
 }
 
+/* Botão de exclusão de categoria */
+.delete-category-btn {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    opacity: 0.8;
+    transition: var(--transition);
+}
+
+.delete-category-btn:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+/* Evita que o card inteiro seja clicável ao passar sobre o botão */
+.category-card .btn-danger {
+    pointer-events: auto;
+}
 /* ==================== RESPONSIVIDADE ==================== */
 @media (max-width: 768px) {
     .categories-grid {
@@ -556,6 +573,7 @@ class ResPublicaApp {
     }
 
     // ================= CATEGORIAS =================
+    // ================= CATEGORIAS =================
     renderHome() {
         const grid = document.getElementById('categoriesGrid');
         // Mantém o botão de adicionar sempre no final
@@ -570,8 +588,19 @@ class ResPublicaApp {
                 <span class="category-icon">📜</span>
                 <h3 class="category-title">${this.escapeHtml(cat.name)}</h3>
                 <div class="category-count">${taskCount} tarefas pendentes</div>
+                <button class="btn btn-danger delete-category-btn" 
+                        data-id="${cat.id}"
+                        style="margin-top: 15px; width: 100%;"
+                        onclick="event.stopPropagation(); app.deleteCategory('${cat.id}')">
+                    🗑 Remover Categoria
+                </button>
             `;
-            card.onclick = () => this.openCategory(cat.id);
+            // Clique no card abre a categoria (exceto se clicar no botão)
+            card.onclick = (e) => {
+                if (!e.target.closest('.delete-category-btn')) {
+                    this.openCategory(cat.id);
+                }
+            };
             grid.appendChild(card);
         });
         
