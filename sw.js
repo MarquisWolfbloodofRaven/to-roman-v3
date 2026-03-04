@@ -1,32 +1,52 @@
-const CACHE_NAME = 'res-publica-v1';
+const CACHE_NAME = 'res-publica-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Latin+Modern+Roman&family=Lato:wght@400;700&display=swap'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
-// Instalação: Cache dos arquivos
+// Instalar: cache dos assets
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Ativação: Limpeza de caches antigos
+// Ativar: limpar caches antigos
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => 
+    caches.keys().then(keys => 
       Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        keys.filter(k => k !== CACHE_NAME)
+            .map(k => caches.delete(k))
       )
-    )
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch: Serve do cache se offline
+// Fetch: servir do cache ou rede
 self.addEventListener('fetch', (e) => {
+  // Ignorar requisições de extensões/externas
+  if (!e.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+  
   e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request))
+    caches.match(e.request).then(cached => 
+      cached || fetch(e.request).then(response => {
+        // Cache apenas de recursos locais
+        if (e.request.url.endsWith('.html') || 
+            e.request.url.endsWith('.json') ||
+            e.request.url.endsWith('.png')) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      })
+    )
   );
 });
