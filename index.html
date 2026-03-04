@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Res Publica - Gestor de Tarefas</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Latin+Modern+Roman&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ==================== VARIÁVEIS TEMA GRECO-ROMANO ==================== */
+:root {
+    /* Cores de Mármore e Pedra */
+    --marble-white: #f0f0f0;
+    --marble-grey: #dcdcdc;
+    --stone-dark: #4a4a4a;
+    --stone-charcoal: #2b2b2b;
+    
+    /* Metais Antigos */
+    --bronze: #cd7f32;
+    --gold-roman: #d4af37;
+    --gold-light: #f4e4bc;
+    
+    /* Cores Imperiais */
+    --royal-purple: #6a3093;
+    --laurel-green: #4a6741;
+    --terracotta: #c05838;
+    
+    /* Efeitos */
+    --shadow-stone: 0 10px 20px rgba(0,0,0,0.15), 0 6px 6px rgba(0,0,0,0.1);
+    --border-carving: 2px solid var(--bronze);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    background-color: var(--marble-white);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(106, 48, 147, 0.05) 0%, transparent 20%);
+    color: var(--stone-charcoal);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* ==================== TIPOGRAFIA ==================== */
+h1, h2, h3, .roman-font {
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* ==================== LAYOUT ==================== */
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+/* ==================== HEADER ==================== */
+.header {
+    text-align: center;
+    padding: 40px 0;
+    border-bottom: 4px double var(--bronze);
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.header::after {
+    content: '🏛️';
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--marble-white);
+    padding: 0 10px;
+    font-size: 1.5rem;
+}
+
+.main-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--stone-charcoal);
+    text-shadow: 2px 2px 0px var(--marble-grey);
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-family: 'Latin Modern Roman', serif;
+    font-style: italic;
+    color: var(--bronze);
+    font-size: 1.2rem;
+}
+
+/* ==================== NAVEGAÇÃO (BREADCRUMB) ==================== */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background: var(--marble-grey);
+    border-radius: 8px;
+    border: 1px solid var(--bronze);
+}
+
+.back-btn {
+    background: var(--stone-dark);
+    color: var(--gold-light);
+    border: none;
+    padding: 10px 20px;
+    font-family: 'Cinzel', serif;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.back-btn:hover {
+    background: var(--bronze);
+    color: white;
+}
+
+.current-view-title {
+    font-size: 1.5rem;
+    color: var(--royal-purple);
+}
+
+/* ==================== VIEWS (HOME vs CATEGORIA) ==================== */
+.view-section {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.view-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== GRID DE CATEGORIAS (HOME) ==================== */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.category-card {
+    background: var(--marble-white);
+    border: 2px solid var(--stone-grey);
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: var(--shadow-stone);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    border-top: 5px solid var(--bronze);
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    border-color: var(--royal-purple);
+}
+
+.category-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.category-title {
+    font-size: 1.4rem;
+    color: var(--stone-charcoal);
+    margin-bottom: 10px;
+}
+
+.category-count {
+    font-size: 0.9rem;
+    color: var(--bronze);
+    font-weight: bold;
+}
+
+.add-category-card {
+    border: 2px dashed var(--bronze);
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: var(--bronze);
+}
+
+.add-category-card:hover {
+    background: rgba(205, 127, 50, 0.05);
+    color: var(--royal-purple);
+}
+
+/* ==================== LISTA DE TAREFAS (DENTRO DA CATEGORIA) ==================== */
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.task-scroll {
+    background: #fffdf5; /* Cor de pergaminho claro */
+    border: 1px solid var(--marble-grey);
+    border-left: 5px solid var(--laurel-green);
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    position: relative;
+    transition: var(--transition);
+}
+
+.task-scroll.completed {
+    opacity: 0.6;
+    border-left-color: var(--stone-dark);
+    background: #f5f5f5;
+}
+
+.task-scroll.completed::after {
+    content: 'V';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: var(--laurel-green);
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.task-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: var(--stone-charcoal);
+}
+
+.task-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: 1px solid var(--bronze);
+    background: transparent;
+    color: var(--stone-charcoal);
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.btn:hover {
+    background: var(--bronze);
+    color: white;
+}
+
+.btn-primary {
+    background: var(--royal-purple);
+    color: white;
+    border-color: var(--royal-purple);
+}
+
+.btn-primary:hover {
+    background: #5a287d;
+}
+
+.btn-danger {
+    border-color: var(--terracotta);
+    color: var(--terracotta);
+}
+
+.btn-danger:hover {
+    background: var(--terracotta);
+    color: white;
+}
+
+/* ==================== TIMER PANEL (FIXO OU DESTAQUE) ==================== */
+.timer-panel {
+    background: var(--stone-charcoal);
+    color: var(--gold-light);
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid var(--gold-roman);
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.timer-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="%23d4af37" fill-opacity="0.1"/></svg>');
+    opacity: 0.3;
+}
+
+.timer-display {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--gold-roman);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    margin: 10px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.timer-info {
+    font-size: 0.9rem;
+    color: var(--marble-grey);
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==================== MODAL / FORMS ==================== */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--marble-white);
+    padding: 40px;
+    border-radius: 8px;
+    border: 4px double var(--bronze);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-family: 'Cinzel', serif;
+    color: var(--stone-charcoal);
+    font-weight: bold;
+}
+
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--marble-grey);
+    background: #fff;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.form-input:focus, .form-textarea:focus {
+    border-color: var(--royal-purple);
+    outline: none;
+    box-shadow: 0 0 10px rgba(106, 48, 147, 0.2);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+/* ==================== RESPONSIVIDADE ==================== */
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
+    .timer-display {
+        font-size: 2rem;
+    }
+    .nav-bar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="main-title">Res Publica</h1>
+        <p class="subtitle">Senatus Populusque Productivus</p>
+    </header>
+
+    <!-- Painel do Timer (Visível sempre) -->
+    <div class="timer-panel" id="timerPanel">
+        <div class="timer-info" id="timerTaskName">Nenhuma tarefa em andamento</div>
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        <div class="timer-controls">
+            <button class="btn btn-primary" id="timerToggleBtn" style="display:none;">⏸ Pausar</button>
+            <button class="btn btn-danger" id="timerResetBtn" style="display:none;">↻ Resetar</button>
+        </div>
+    </div>
+
+    <!-- Barra de Navegação -->
+    <div class="nav-bar" id="navBar" style="visibility: hidden;">
+        <button class="back-btn" id="backBtn">← Voltar ao Fórum</button>
+        <h2 class="current-view-title" id="currentViewTitle">Tabulae</h2>
+        <div style="width: 100px;"></div> <!-- Spacer para centralizar -->
+    </div>
+
+    <!-- VIEW 1: HOME (Lista de Categorias) -->
+    <section id="homeView" class="view-section active">
+        <div class="categories-grid" id="categoriesGrid">
+            <!-- Categorias inseridas via JS -->
+            <div class="category-card add-category-card" onclick="app.openModal('category')">
+                <span class="category-icon">+</span>
+                <span class="category-title">Nova Categoria</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIEW 2: TAREFAS (Dentro de uma Categoria) -->
+    <section id="categoryView" class="view-section">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="app.openModal('task')">+ Nova Tarefa</button>
+        </div>
+        <div class="task-list" id="taskList">
+            <!-- Tarefas inseridas via JS -->
+        </div>
+    </section>
+</div>
+
+<!-- Modal Universal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+        <h2 class="roman-font" id="modalTitle" style="margin-bottom: 20px; text-align: center; color: var(--royal-purple);">Título</h2>
+        <form id="modalForm">
+            <div class="form-group">
+                <label class="form-label" id="label1">Nome</label>
+                <input type="text" class="form-input" id="input1" required>
+            </div>
+            <div class="form-group" id="group2" style="display:none;">
+                <label class="form-label" id="label2">Descrição</label>
+                <textarea class="form-textarea" id="input2"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn" onclick="app.closeModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Confirmar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+class ResPublicaApp {
+    constructor() {
+        // Estrutura de dados: { categories: [{ id, name, tasks: [{ id, title, desc, completed, time }] }] }
+        this.data = this.loadData();
+        this.currentCategoryId = null;
+        this.timerInterval = null;
+        this.activeTaskId = null;
+        this.elapsedSeconds = 0;
+        this.modalType = null; // 'category' or 'task'
+
+        this.init();
+    }
+
+    init() {
+        this.renderHome();
+        this.setupEventListeners();
+    }
+
+    // ================= DADOS =================
+    loadData() {
+        const saved = localStorage.getItem('resPublicaData');
+        return saved ? JSON.parse(saved) : { categories: [] };
+    }
+
+    saveData() {
+        localStorage.setItem('resPublicaData', JSON.stringify(this.data));
+    }
+
+    // ================= NAVEGAÇÃO =================
+    showView(viewName) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewName + 'View').classList.add('active');
+        
+        const navBar = document.getElementById('navBar');
+        const backBtn = document.getElementById('backBtn');
+        
+        if (viewName === 'home') {
+            navBar.style.visibility = 'hidden';
+            this.currentCategoryId = null;
+        } else {
+            navBar.style.visibility = 'visible';
+            const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+            if (cat) document.getElementById('currentViewTitle').textContent = cat.name;
+        }
+    }
+
+    // ================= CATEGORIAS =================
+    renderHome() {
+        const grid = document.getElementById('categoriesGrid');
+        // Mantém o botão de adicionar sempre no final
+        const addBtn = grid.querySelector('.add-category-card');
+        grid.innerHTML = '';
+        
+        this.data.categories.forEach(cat => {
+            const taskCount = cat.tasks.filter(t => !t.completed).length;
+            const card = document.createElement('div');
+            card.className = 'category-card';
+            card.innerHTML = `
+                <span class="category-icon">📜</span>
+                <h3 class="category-title">${this.escapeHtml(cat.name)}</h3>
+                <div class="category-count">${taskCount} tarefas pendentes</div>
+            `;
+            card.onclick = () => this.openCategory(cat.id);
+            grid.appendChild(card);
+        });
+        
+        grid.appendChild(addBtn);
+    }
+
+    openCategory(id) {
+        this.currentCategoryId = id;
+        this.renderTasks();
+        this.showView('category');
+    }
+
+    addCategory(name) {
+        const newCat = {
+            id: Date.now().toString(),
+            name: name,
+            tasks: []
+        };
+        this.data.categories.push(newCat);
+        this.saveData();
+        this.renderHome();
+    }
+
+    deleteCategory(id) {
+        if(confirm('Deseja remover esta categoria e todas as suas tarefas?')) {
+            this.data.categories = this.data.categories.filter(c => c.id !== id);
+            if (this.currentCategoryId === id) this.showView('home');
+            this.saveData();
+            this.renderHome();
+        }
+    }
+
+    // ================= TAREFAS =================
+    renderTasks() {
+        const list = document.getElementById('taskList');
+        const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+        if (!cat) return;
+
+        list.innerHTML = '';
+        if (cat.tasks.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color: var(--stone-dark); font-style:italic;">Nenhum rolo de pergaminho encontrado.</p>';
+            return;
+        }
+
+        cat.tasks.forEach(task => {
+            const item = document.createElement('div');
+            item.className = `task-scroll ${task.completed ? 'completed' : ''}`;
+            
+            // Botão de timer dinâmico
+            let timerBtn = '';
+            if (!task.completed) {
+                const isRunning = this.activeTaskId === task.id && this.timerInterval;
+                timerBtn = `<button class="btn" onclick="app.toggleTimer('${task.id}')">${isRunning ? '⏸ Pausar' : '⏳ Iniciar Tempo'}</button>`;
+            }
+
+            item.innerHTML = `
+                <div class="task-header">
+                    <h3 class="task-title">${this.escapeHtml(task.title)}</h3>
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="app.toggleComplete('${task.id}')" 
+                           style="width:20px; height:20px; cursor:pointer;">
+                </div>
+                <p style="color: var(--stone-dark); margin-bottom: 10px;">${this.escapeHtml(task.description || '')}</p>
+                ${task.time > 0 ? `<div style="font-size:0.8rem; color:var(--bronze); margin-bottom:10px;">⏱ Total: ${this.formatTime(task.time)}</div>` : ''}
+                <div class="task-actions">
+                    ${timerBtn}
+                    <button class="btn" onclick="app.editTask('${task.id}')">✎ Editar</button>
+                    <button class="btn btn-danger" onclick="app.deleteTask('${task.id}')">🗑 Apagar</button>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    addTask(title, description) {
+        const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+        if (!cat) return;
+        
+        cat.tasks.push({
+            id: Date.now().toString(),
+            title,
+            description,
+            completed: false,
+            time: 0
+        });
+        this.saveData();
+        this.renderTasks();
+    }
+
+    toggleComplete(taskId) {
+        const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+        const task = cat.tasks.find(t => t.id === taskId);
+        if (task) {
+            task.completed = !task.completed;
+            if (task.completed && this.activeTaskId === taskId) {
+                this.stopTimer();
+            }
+            this.saveData();
+            this.renderTasks();
+        }
+    }
+
+    deleteTask(taskId) {
+        if(confirm('Apagar esta tarefa?')) {
+            const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+            cat.tasks = cat.tasks.filter(t => t.id !== taskId);
+            if (this.activeTaskId === taskId) this.stopTimer();
+            this.saveData();
+            this.renderTasks();
+        }
+    }
+
+    editTask(taskId) {
+        const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+        const task = cat.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const newTitle = prompt('Novo título:', task.title);
+        if (newTitle) {
+            task.title = newTitle;
+            const newDesc = prompt('Nova descrição:', task.description);
+            if (newDesc !== null) task.description = newDesc;
+            this.saveData();
+            this.renderTasks();
+        }
+    }
+
+    // ================= TIMER =================
+    toggleTimer(taskId) {
+        const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+        const task = cat.tasks.find(t => t.id === taskId);
+        if (!task || task.completed) return;
+
+        if (this.activeTaskId === taskId && this.timerInterval) {
+            this.pauseTimer();
+        } else {
+            this.startTimer(taskId, task);
+        }
+    }
+
+    startTimer(taskId, task) {
+        if (this.timerInterval) this.pauseTimer();
+        
+        this.activeTaskId = taskId;
+        this.elapsedSeconds = 0; // Reinicia contagem da sessão
+        
+        document.getElementById('timerTaskName').textContent = `Experimento: ${task.title}`;
+        document.getElementById('timerToggleBtn').style.display = 'inline-block';
+        document.getElementById('timerToggleBtn').textContent = '⏸ Pausar';
+        document.getElementById('timerResetBtn').style.display = 'inline-block';
+        
+        this.timerInterval = setInterval(() => {
+            this.elapsedSeconds++;
+            task.time++;
+            this.updateTimerDisplay();
+            this.saveData();
+        }, 1000);
+        
+        this.renderTasks(); // Atualiza botões na lista
+    }
+
+    pauseTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+            document.getElementById('timerToggleBtn').textContent = '▶ Retomar';
+        }
+    }
+
+    stopTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = null;
+        this.activeTaskId = null;
+        this.elapsedSeconds = 0;
+        document.getElementById('timerTaskName').textContent = 'Nenhuma tarefa em andamento';
+        document.getElementById('timerDisplay').textContent = '00:00:00';
+        document.getElementById('timerToggleBtn').style.display = 'none';
+        document.getElementById('timerResetBtn').style.display = 'none';
+        this.renderTasks();
+    }
+
+    resetTimer() {
+        if(confirm('Zerar o tempo desta sessão?')) {
+            const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+            const task = cat.tasks.find(t => t.id === this.activeTaskId);
+            if (task) {
+                task.time -= this.elapsedSeconds;
+                if (task.time < 0) task.time = 0;
+                this.saveData();
+            }
+            this.stopTimer();
+        }
+    }
+
+    updateTimerDisplay() {
+        const h = Math.floor(this.elapsedSeconds / 3600);
+        const m = Math.floor((this.elapsedSeconds % 3600) / 60);
+        const s = this.elapsedSeconds % 60;
+        document.getElementById('timerDisplay').textContent = 
+            `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+
+    formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        if (h > 0) return `${h}h ${m}m`;
+        return `${m}m ${seconds % 60}s`;
+    }
+
+    // ================= MODAL & UTILS =================
+    openModal(type) {
+        this.modalType = type;
+        const overlay = document.getElementById('modalOverlay');
+        const title = document.getElementById('modalTitle');
+        const label1 = document.getElementById('label1');
+        const group2 = document.getElementById('group2');
+        const label2 = document.getElementById('label2');
+        
+        document.getElementById('modalForm').reset();
+        overlay.classList.add('active');
+
+        if (type === 'category') {
+            title.textContent = 'Nova Categoria';
+            label1.textContent = 'Nome da Categoria';
+            group2.style.display = 'none';
+        } else {
+            title.textContent = 'Nova Tarefa';
+            label1.textContent = 'Título';
+            group2.style.display = 'block';
+            label2.textContent = 'Descrição';
+        }
+    }
+
+    closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    setupEventListeners() {
+        document.getElementById('backBtn').addEventListener('click', () => this.showView('home'));
+        
+        document.getElementById('modalForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val1 = document.getElementById('input1').value.trim();
+            const val2 = document.getElementById('input2').value.trim();
+            
+            if (!val1) return;
+
+            if (this.modalType === 'category') {
+                this.addCategory(val1);
+            } else {
+                this.addTask(val1, val2);
+            }
+            this.closeModal();
+        });
+
+        document.getElementById('timerToggleBtn').addEventListener('click', () => {
+            if (this.timerInterval) this.pauseTimer();
+            else {
+                // Retomar
+                const cat = this.data.categories.find(c => c.id === this.currentCategoryId);
+                const task = cat.tasks.find(t => t.id === this.activeTaskId);
+                if (task) {
+                    document.getElementById('timerToggleBtn').textContent = '⏸ Pausar';
+                    this.timerInterval = setInterval(() => {
+                        this.elapsedSeconds++;
+                        task.time++;
+                        this.updateTimerDisplay();
+                        this.saveData();
+                    }, 1000);
+                }
+            }
+        });
+
+        document.getElementById('timerResetBtn').addEventListener('click', () => this.resetTimer());
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
+// Inicialização
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+    app = new ResPublicaApp();
+});
+</script>
+</body>
+</html>
