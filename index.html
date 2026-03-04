@@ -416,17 +416,38 @@ h1, h2, h3, .roman-font {
     margin-top: 30px;
 }
 
-/* Botão de exclusão de categoria */
+/* Botão de exclusão de categoria - VISÍVEL E FUNCIONAL */
 .delete-category-btn {
-    font-size: 0.75rem;
-    padding: 6px 12px;
-    opacity: 0.8;
-    transition: var(--transition);
+    margin-top: 15px !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    background: var(--terracotta) !important;
+    color: white !important;
+    border: 2px solid var(--terracotta) !important;
+    border-radius: 6px !important;
+    font-family: 'Cinzel', serif !important;
+    font-size: 0.75rem !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    transition: all 0.3s ease !important;
+    z-index: 10 !important;
+    position: relative !important;
 }
 
 .delete-category-btn:hover {
-    opacity: 1;
-    transform: translateY(-1px);
+    background: #a94442 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* Garante que o card mostre o botão */
+.category-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding-bottom: 10px !important;
 }
 
 /* Evita que o card inteiro seja clicável ao passar sobre o botão */
@@ -575,37 +596,82 @@ class ResPublicaApp {
     // ================= CATEGORIAS =================
     // ================= CATEGORIAS =================
     renderHome() {
-        const grid = document.getElementById('categoriesGrid');
-        // Mantém o botão de adicionar sempre no final
-        const addBtn = grid.querySelector('.add-category-card');
-        grid.innerHTML = '';
+    console.log('🔄 Renderizando home. Categorias:', this.data.categories.length);
+    
+    const grid = document.getElementById('categoriesGrid');
+    if (!grid) {
+        console.error('❌ Elemento categoriesGrid não encontrado!');
+        return;
+    }
+    
+    const addBtn = grid.querySelector('.add-category-card');
+    grid.innerHTML = '';
+    
+    if (!Array.isArray(this.data.categories)) {
+        console.error('❌ data.categories não é array!', this.data);
+        this.data.categories = [];
+    }
+    
+    this.data.categories.forEach((cat, index) => {
+        if (!cat || !cat.id || !cat.name) {
+            console.warn('⚠️ Categoria inválida no índice', index, cat);
+            return;
+        }
         
-        this.data.categories.forEach(cat => {
-            const taskCount = cat.tasks.filter(t => !t.completed).length;
-            const card = document.createElement('div');
-            card.className = 'category-card';
-            card.innerHTML = `
-                <span class="category-icon">📜</span>
-                <h3 class="category-title">${this.escapeHtml(cat.name)}</h3>
-                <div class="category-count">${taskCount} tarefas pendentes</div>
-                <button class="btn btn-danger delete-category-btn" 
-                        data-id="${cat.id}"
-                        style="margin-top: 15px; width: 100%;"
-                        onclick="event.stopPropagation(); app.deleteCategory('${cat.id}')">
-                    🗑 Remover Categoria
-                </button>
-            `;
-            // Clique no card abre a categoria (exceto se clicar no botão)
-            card.onclick = (e) => {
-                if (!e.target.closest('.delete-category-btn')) {
-                    this.openCategory(cat.id);
-                }
-            };
-            grid.appendChild(card);
+        const taskCount = Array.isArray(cat.tasks) 
+            ? cat.tasks.filter(t => t && !t.completed).length 
+            : 0;
+            
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.dataset.categoryId = cat.id;
+        
+        // HTML do card COM BOTÃO VISÍVEL
+        card.innerHTML = `
+            <span class="category-icon">📜</span>
+            <h3 class="category-title">${this.escapeHtml(cat.name)}</h3>
+            <div class="category-count">${taskCount} tarefas pendentes</div>
+            <button 
+                class="btn btn-danger delete-category-btn" 
+                data-category-id="${cat.id}"
+                type="button"
+                style="margin-top: 15px; width: 100%; padding: 8px; background: #c05838; color: white; border: 2px solid #c05838; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.75rem;"
+            >
+                🗑 Remover Categoria
+            </button>
+        `;
+        
+        // Evento de clique no card (abre categoria)
+        card.addEventListener('click', (e) => {
+            console.log('📜 Clique no card. Target:', e.target.className);
+            if (!e.target.closest('.delete-category-btn')) {
+                this.openCategory(cat.id);
+            }
         });
         
+        // Evento de clique no botão de excluir
+        const deleteBtn = card.querySelector('.delete-category-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log('🗑 Clique no botão de excluir. Category ID:', cat.id);
+                this.deleteCategory(cat.id);
+            });
+        } else {
+            console.error('❌ Botão de excluir não encontrado no card!');
+        }
+        
+        grid.appendChild(card);
+        console.log(`✅ Card "${cat.name}" renderizado com botão de exclusão`);
+    });
+    
+    if (addBtn) {
         grid.appendChild(addBtn);
     }
+    
+    console.log('✅ Home renderizada. Total de cards:', grid.children.length);
+}
 
     openCategory(id) {
         this.currentCategoryId = id;
