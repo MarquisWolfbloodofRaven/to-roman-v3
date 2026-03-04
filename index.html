@@ -596,6 +596,7 @@ class ResPublicaApp {
     // ================= CATEGORIAS =================
     // ================= CATEGORIAS =================
     renderHome() {
+    console.log('🔄 renderHome() EXECUTADO');
     console.log('🔄 Renderizando home. Categorias:', this.data.categories.length);
     
     const grid = document.getElementById('categoriesGrid');
@@ -984,11 +985,12 @@ class ResPublicaApp {
 let app;
     document.addEventListener('DOMContentLoaded', () => {
         app = new ResPublicaApp();
+        // ✅ Garantir que app esteja no escopo global para onclick inline
+        window.app = app;
         console.log('🏛️ Res Publica inicializado. app disponível globalmente.');
     });
     
-    // ✅ Garantir que app esteja no escopo global para onclick inline
-    window.app = app;
+    
     
     // Registro do Service Worker (apenas se em produção/HTTPS/localhost)
     if ('serviceWorker' in navigator && (location.hostname === 'localhost' || location.protocol === 'https:')) {
