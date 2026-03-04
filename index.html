@@ -625,14 +625,19 @@ class ResPublicaApp {
     }
 
     deleteCategory(id) {
-        if(confirm('Deseja remover esta categoria e todas as suas tarefas?')) {
-            this.data.categories = this.data.categories.filter(c => c.id !== id);
-            if (this.currentCategoryId === id) this.showView('home');
-            this.saveData();
-            this.renderHome();
+    const cat = this.data.categories.find(c => c.id === id);
+    if (!cat) return;
+    
+    // Confirmação personalizada
+    const confirmed = confirm(`⚠️ Deseja realmente dissolver a categoria "${cat.name}"?\n\nTodas as tarefas contidas serão perdidas para a posteridade.`);
+    
+    if (confirmed) {
+        this.data.categories = this.data.categories.filter(c => c.id !== id);
+        if (this.currentCategoryId === id) this.showView('home');
+        this.saveData();
+        this.renderHome();
         }
     }
-
     // ================= TAREFAS =================
     renderTasks() {
         const list = document.getElementById('taskList');
