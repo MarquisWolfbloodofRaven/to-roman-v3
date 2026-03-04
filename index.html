@@ -153,7 +153,7 @@ h1, h2, h3, .roman-font {
 
 .category-card {
     background: var(--marble-white);
-    border: 2px solid var(--stone-grey);
+    border: 2px solid var(--marble-grey); 
     border-radius: 8px;
     padding: 25px;
     box-shadow: var(--shadow-stone);
@@ -625,17 +625,42 @@ class ResPublicaApp {
     }
 
     deleteCategory(id) {
-    const cat = this.data.categories.find(c => c.id === id);
-    if (!cat) return;
-    
-    // Confirmação personalizada
-    const confirmed = confirm(`⚠️ Deseja realmente dissolver a categoria "${cat.name}"?\n\nTodas as tarefas contidas serão perdidas para a posteridade.`);
-    
-    if (confirmed) {
-        this.data.categories = this.data.categories.filter(c => c.id !== id);
-        if (this.currentCategoryId === id) this.showView('home');
-        this.saveData();
-        this.renderHome();
+        console.log('🗑 Tentando deletar categoria:', id);
+        
+        const cat = this.data.categories.find(c => c.id === id);
+        if (!cat) {
+            console.error('❌ Categoria não encontrada:', id);
+            return;
+        }
+        
+        const confirmed = confirm(
+            `⚠️ Deseja realmente dissolver a categoria "${cat.name}"?\n\n` +
+            `Todas as ${cat.tasks.length} tarefa(s) contidas serão perdidas.`
+        );
+        
+        if (confirmed) {
+            console.log('✅ Confirmação recebida. Deletando...');
+            
+            // Parar timer se estiver em tarefa desta categoria
+            if (this.currentCategoryId === id) {
+                this.stopTimer();
+                this.showView('home');
+            }
+            
+            // Filtrar e salvar
+            this.data.categories = this.data.categories.filter(c => c.id !== id);
+            this.saveData();
+            
+            console.log('✅ Categoria deletada. Dados salvos.');
+            console.log('📊 Categorias restantes:', this.data.categories.length);
+            
+            // Re-renderizar
+            this.renderHome();
+            
+            // Feedback visual opcional
+            alert(`✅ A categoria "${cat.name}" foi dissolvida com sucesso.`);
+        } else {
+            console.log('❌ Exclusão cancelada pelo usuário.');
         }
     }
     // ================= TAREFAS =================
@@ -891,9 +916,22 @@ class ResPublicaApp {
 
 // Inicialização
 let app;
-document.addEventListener('DOMContentLoaded', () => {
-    app = new ResPublicaApp();
-});
+    document.addEventListener('DOMContentLoaded', () => {
+        app = new ResPublicaApp();
+        console.log('🏛️ Res Publica inicializado. app disponível globalmente.');
+    });
+    
+    // ✅ Garantir que app esteja no escopo global para onclick inline
+    window.app = app;
+    
+    // Registro do Service Worker (apenas se em produção/HTTPS/localhost)
+    if ('serviceWorker' in navigator && (location.hostname === 'localhost' || location.protocol === 'https:')) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('✅ SW registrado:', reg.scope))
+                .catch(err => console.error('❌ SW falhou:', err));
+        });
+    }
     // Registro do Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
