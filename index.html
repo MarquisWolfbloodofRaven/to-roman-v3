@@ -547,6 +547,27 @@ h1, h2, h3, .roman-font {
 </div>
 
 <script>
+
+    // Registrar Service Worker apenas em contexto seguro
+    if ('serviceWorker' in navigator) {
+      const isLocalhost = location.hostname === 'localhost' || 
+                         location.hostname === '127.0.0.1' ||
+                         location.protocol === 'https:';
+      
+      if (isLocalhost) {
+        window.addEventListener('load', () => {
+    …              }
+                });
+              });
+            })
+            .catch(err => console.error('❌ SW falhou:', err));
+        });
+      } else {
+        console.warn('⚠️ PWA requer HTTPS ou localhost. Service Worker não registrado.');
+      }
+    }
+
+    
 class ResPublicaApp {
     constructor() {
         // Estrutura de dados: { categories: [{ id, name, tasks: [{ id, title, desc, completed, time }] }] }
