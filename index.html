@@ -547,7 +547,13 @@ h1, h2, h3, .roman-font {
 </div>
 
 <script>
-
+    // Suprimir erros de extensões externas (não afeta seu app)
+    window.addEventListener('error', (e) => {
+        if (e.message?.includes('MtPopUpList') || 
+            e.message?.includes('chrome-extension')) {
+            return true; // Silencia o erro
+        }
+    });
     // Registrar Service Worker apenas em contexto seguro
     if ('serviceWorker' in navigator) {
       const isLocalhost = location.hostname === 'localhost' || 
